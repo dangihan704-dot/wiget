@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위젯 테마 커스터마이저</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&family=Nanum+Pen+Script&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
+<style>
+@font-face{font-family:'GmarketSansMedium';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-weight:normal;font-style:normal;font-display:swap;}
+</style>
+<style>
+  :root{
+    --ink:#2b2f36; --sub:#6b7480; --line:#e5e2da; --panel:#ffffff;
+    --stage:#efece4; --studio:#f7f5ef; --brand:#3a7d6a; --brand-soft:#e8f1ed;
+    --radius:14px; --shadow:0 1px 2px rgba(30,35,40,.06),0 8px 24px rgba(30,35,40,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:var(--ink);background:var(--studio);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 20px 70px}
+  header.top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  header.top h1{font-size:19px;margin:0;letter-spacing:-.01em;font-weight:800}
+  header.top .tag{font-size:12px;color:var(--sub)}
+  .lead{font-size:12.5px;color:var(--sub);margin:0 0 20px;line-height:1.6}
+  .lead b{color:var(--brand)}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} .stage{order:-1} }
+
+  .stage{position:sticky;top:18px;background:radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/16px 16px,var(--stage);border:1px solid var(--line);border-radius:20px;padding:18px 10px;box-shadow:var(--shadow);min-height:200px}
+  .stage-hd{display:flex;justify-content:space-between;align-items:center;padding:0 8px 6px;color:var(--sub);font-size:11px;letter-spacing:.04em}
+  .stage-hd .dot{width:7px;height:7px;border-radius:50%;background:#c9c4b8;display:inline-block;margin-right:5px}
+  .preview-scroll{overflow:auto}
+  #mount{display:flex;justify-content:center}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .sec{border-top:1px solid var(--line)}
+  .sec:first-child{border-top:0}
+  .sec > .sec-hd{width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:0;cursor:pointer;font:inherit;color:var(--ink);padding:14px 16px;font-weight:700;font-size:13px;letter-spacing:-.01em}
+  .sec-hd .chev{color:var(--sub);font-size:11px;transition:transform .18s}
+  .sec.closed .chev{transform:rotate(-90deg)}
+  .sec-bd{padding:2px 16px 16px}
+  .sec.closed .sec-bd{display:none}
+  .hint{font-size:11px;color:var(--sub);margin:0 0 12px;line-height:1.55}
+  .subhd{font-size:11.5px;font-weight:700;color:var(--ink);margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+  .subhd:first-child{margin-top:2px}
+  .subhd .ic{width:6px;height:6px;border-radius:2px;background:var(--brand)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:#fbfaf7;border-radius:999px;padding:7px 13px;font-size:12px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:7px;transition:all .14s;font-weight:600}
+  .chip:hover{border-color:#cdd6d1;background:#fff}
+  .chip.active{background:var(--brand);border-color:var(--brand);color:#fff}
+  .chip .sw{width:13px;height:13px;border-radius:4px;border:1px solid rgba(0,0,0,.12)}
+  .chip.active .sw{border-color:rgba(255,255,255,.5)}
+
+  /* big main-color pickers */
+  .mains{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:2px}
+  .maincard{border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;background:#fbfaf7}
+  .maincard .cname{font-size:12px;font-weight:700;margin-bottom:2px}
+  .maincard .csub{font-size:10px;color:var(--sub);margin-bottom:8px}
+  .maincard input[type=color]{-webkit-appearance:none;appearance:none;width:100%;height:40px;border:1px solid var(--line);border-radius:9px;background:none;cursor:pointer;padding:0}
+  .maincard input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
+  .maincard input[type=color]::-webkit-color-swatch{border:none;border-radius:6px}
+  .maincard .cval{font-size:10px;color:var(--sub);font-family:ui-monospace,monospace;margin-top:6px}
+
+  .rows{display:flex;flex-direction:column;gap:2px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
+  .row .lbl{font-size:12.5px;color:var(--ink)}
+  .row .sub{font-size:10.5px;color:var(--sub);display:block;margin-top:1px}
+  .swatch-wrap{display:flex;align-items:center;gap:8px}
+  .hexval{font-size:11px;color:var(--sub);font-family:ui-monospace,monospace;min-width:62px;text-align:right}
+  input[type=color].mini{-webkit-appearance:none;appearance:none;width:34px;height:26px;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer;padding:0}
+  input[type=color].mini::-webkit-color-swatch-wrapper{padding:2px}
+  input[type=color].mini::-webkit-color-swatch{border:none;border-radius:6px}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+  select,textarea{font:inherit;color:var(--ink);border:1px solid var(--line);border-radius:10px;background:#fbfaf7;padding:9px 11px;width:100%}
+  select:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+  .slider{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .slider label{font-size:12px;color:var(--sub);min-width:64px}
+  input[type=range]{flex:1;accent-color:var(--brand)}
+  .slider .num{font-size:11px;color:var(--sub);font-family:ui-monospace,monospace;min-width:36px;text-align:right}
+
+  .btn{font:inherit;font-weight:700;font-size:13px;cursor:pointer;border-radius:10px;padding:11px 14px;border:1px solid var(--brand);background:var(--brand);color:#fff;transition:filter .14s}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{border-color:#cdd6d1}
+  .btn-row{display:flex;gap:8px;margin-top:12px}
+  .btn-row .btn{flex:1}
+  textarea.code{height:150px;font-family:ui-monospace,'Courier New',monospace;font-size:11px;line-height:1.5;white-space:pre;overflow:auto;margin-top:10px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;opacity:0;pointer-events:none;transition:all .22s;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .note{font-size:10.5px;color:var(--sub);line-height:1.5;margin-top:9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>위젯 테마 커스터마이저</h1>
+    <span class="tag">색은 3개만 · 무늬는 두 곳 · 글자는 그대로</span>
+  </header>
+  <p class="lead"><b>배경·포인트·글자</b> 세 가지 색만 고르면 나머지 색은 자동으로 맞춰져요. 무늬는 <b>프레임 배경</b>과 <b>본문(화면) 배경</b> 두 곳을 따로 바꿀 수 있어요. 위젯 안의 글자(<b>{{ }}</b>·라벨)는 절대 안 바뀝니다. 다 됐으면 <b>내보내기</b>에서 복사하세요.</p>
+
+  <div class="grid">
+    <div class="panel" id="panel">
+
+      <section class="sec" data-sec="preset">
+        <button class="sec-hd" type="button"><span>테마 프리셋</span><span class="chev">▾</span></button>
+        <div class="sec-bd">
+          <p class="hint">누르면 세 가지 색이 한 번에 채워져요.</p>
+          <div class="chips" id="presetChips"></div>
+        </div>
+      </section>
+
+      <section class="sec" data-sec="main">
+        <button class="sec-hd" type="button"><span>메인 색상 (3개)</span><span class="chev">▾</span></button>
+        <div class="sec-bd">
+          <p class="hint">이 세 개만 바꾸면 테두리·박스·라벨 색이 알아서 조화롭게 계산돼요.</p>
+          <div class="mains">
+            <div class="maincard"><div class="cname">배경</div><div class="csub">바탕·박스</div><input type="color" id="mBg"><div class="cval" id="mBgV"></div></div>
+            <div class="maincard"><div class="cname">포인트</div><div class="csub">하트·제목</div><input type="color" id="mAc"><div class="cval" id="mAcV"></div></div>
+            <div class="maincard"><div class="cname">글자</div><div class="csub">본문·값</div><input type="color" id="mTx"><div class="cval" id="mTxV"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" data-sec="pattern">
+        <button class="sec-hd" type="button"><span>무늬 (배경 · 본문)</span><span class="chev">▾</span></button>
+        <div class="sec-bd">
+          <div class="subhd"><span class="ic"></span>프레임 배경 무늬</div>
+          <div class="chips" id="framePatChips"></div>
+          <div class="row" style="margin-top:12px"><span class="lbl">무늬 색상</span><div class="swatch-wrap"><span class="hexval" id="fPatHex"></span><input type="color" class="mini" id="fPatColor"></div></div>
+          <div class="slider"><label>진하기</label><input type="range" id="fPatAlpha" min="3" max="70" step="1"><span class="num" id="fPatAlphaN"></span></div>
+          <div class="slider"><label>크기</label><input type="range" id="fPatSize" min="8" max="48" step="1"><span class="num" id="fPatSizeN"></span></div>
+
+          <div class="subhd" style="margin-top:20px"><span class="ic"></span>본문(화면) 무늬</div>
+          <div class="chips" id="screenPatChips"></div>
+          <div class="row" style="margin-top:12px"><span class="lbl">무늬 색상</span><div class="swatch-wrap"><span class="hexval" id="sPatHex"></span><input type="color" class="mini" id="sPatColor"></div></div>
+          <div class="slider"><label>진하기</label><input type="range" id="sPatAlpha" min="2" max="50" step="1"><span class="num" id="sPatAlphaN"></span></div>
+          <div class="slider"><label>크기</label><input type="range" id="sPatSize" min="8" max="48" step="1"><span class="num" id="sPatSizeN"></span></div>
+          <p class="note">본문 무늬는 글자 뒤에 깔려요. 너무 진하면 읽기 힘드니 은은하게 두는 걸 추천해요.</p>
+        </div>
+      </section>
+
+      <section class="sec" data-sec="font">
+        <button class="sec-hd" type="button"><span>메인 폰트</span><span class="chev">▾</span></button>
+        <div class="sec-bd">
+          <p class="hint">이제 위젯 <b>전체 글꼴</b>에 적용돼요 — 날짜·게이지·A/B 버튼까지 한 폰트로 통일됩니다.</p>
+          <div class="field"><select id="fontSel"></select></div>
+          <p class="note">지마켓산스·갈무리·손글씨 등은 이 미리보기에서 웹폰트로 불러와 보여줘요. 붙여넣는 곳(플랫폼)에서 그 폰트를 지원하지 않으면 기본 글꼴로 표시될 수 있어요. 갈무리는 픽셀(비트맵) 폰트라 레트로 감성이 살아요.</p>
+        </div>
+      </section>
+
+      <section class="sec closed" data-sec="advanced">
+        <button class="sec-hd" type="button"><span>세부 색상 조정 (선택)</span><span class="chev">▾</span></button>
+        <div class="sec-bd">
+          <p class="hint">특정 색만 손보고 싶을 때만 열어요. <b>메인 색상을 바꾸면 여기 값은 다시 자동 계산</b>됩니다.</p>
+          <div class="rows" id="rowsAdvanced"></div>
+        </div>
+      </section>
+
+      <section class="sec closed" data-sec="export">
+        <button class="sec-hd" type="button"><span>내보내기</span><span class="chev">▾</span></button>
+        <div class="sec-bd">
+          <p class="hint">아래 코드가 지금 미리보기와 똑같아요. 복사해서 그대로 쓰세요.</p>
+          <div class="btn-row">
+            <button class="btn" id="copyBtn">HTML 복사</button>
+            <button class="btn ghost" id="resetBtn">기본값으로</button>
+          </div>
+          <textarea class="code" id="codeOut" readonly spellcheck="false"></textarea>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="stage">
+      <div class="stage-hd"><span><span class="dot"></span>미리보기</span><span>↔ 좌우로 밀어 페이지 넘김</span></div>
+      <div class="preview-scroll"><div id="mount"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="text/html" id="tpl">
+<div style="display:flex;justify-content:center;padding:16px 14px;font-family:var(--font-main);">
+  <div class="fadeInUp" style="width:min(84vw,312px);position:relative;padding:17px 15px 20px;border-radius:34px 34px 30px 30px;background-color:var(--frame-bg);background-image:var(--pattern);background-size:var(--pattern-size,auto);background-position:var(--pattern-pos,0 0);border:2px solid var(--frame-border);box-shadow:0 3px 0 rgba(255,255,255,.7) inset,0 -12px 22px rgba(150,150,150,.22) inset,0 20px 38px rgba(120,120,120,.30),0 8px 16px rgba(120,120,120,.18);">
+    <!-- corner screws -->
+      <div style="position:absolute;top:9px;left:9px;width:6px;height:6px;border-radius:50%;background:#d3ddd8;box-shadow:0 1px 1px rgba(120,120,120,.5) inset;z-index:4;">
+      </div>
+      <div style="position:absolute;top:9px;right:9px;width:6px;height:6px;border-radius:50%;background:#d3ddd8;box-shadow:0 1px 1px rgba(120,120,120,.5) inset;z-index:4;">
+      </div>
+      <div style="position:absolute;bottom:9px;left:9px;width:6px;height:6px;border-radius:50%;background:#d3ddd8;box-shadow:0 1px 1px rgba(120,120,120,.5) inset;z-index:4;">
+      </div>
+      <div style="position:absolute;bottom:9px;right:9px;width:6px;height:6px;border-radius:50%;background:#d3ddd8;box-shadow:0 1px 1px rgba(120,120,120,.5) inset;z-index:4;">
+      </div>
+      <!-- stickers (inside frame, clearer colors) -->
+        <div style="position:absolute;top:3px;left:24px;color:var(--accent);font-size:15px;transform:rotate(-12deg);text-shadow:0 0 3px #fff;pointer-events:none;z-index:7;">♥</div>
+        <div style="position:absolute;top:4px;left:50%;color:var(--accent);font-size:11px;text-shadow:0 0 3px #fff;pointer-events:none;z-index:7;">✦</div>
+        <div style="position:absolute;top:2px;right:24px;color:var(--accent);font-size:15px;transform:rotate(12deg);text-shadow:0 0 3px #fff;pointer-events:none;z-index:7;">★</div>
+        <!-- ===== SCREEN BEZEL ===== -->
+          <div style="position:relative;border-radius:18px;padding:10px 9px 9px;background:linear-gradient(180deg,#ffffff,var(--frame-bg));border:1px solid var(--screen-border);box-shadow:0 2px 4px rgba(255,255,255,.8) inset,0 6px 12px rgba(140,140,140,.22);">
+            <!-- power led -->
+              <div style="position:absolute;top:5px;left:14px;display:flex;align-items:center;gap:4px;z-index:3;">
+                <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 5px rgba(150,150,150,.9);">
+                </div>
+                <div style="font-family:var(--font-main);font-size:6px;color:var(--muted);letter-spacing:1px;">ON</div>
+              </div>
+              <div style="position:relative;margin-top:8px;border-radius:12px;overflow:hidden;border:2px solid var(--screen-border);background-color:var(--screen-bg);background-image:var(--screen-pattern,none);background-size:var(--screen-pattern-size,auto);background-position:var(--screen-pattern-pos,0 0);color:var(--main-text);box-shadow:0 6px 14px rgba(150,150,150,.25) inset;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px 6px;font-family:var(--font-main);font-size:10px;color:var(--label-text);letter-spacing:.5px;">
+                  <div>{{날}}</div>
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div>{{시}}</div>
+                    <div style="color:var(--accent);font-size:9px;letter-spacing:1px;">♥♥♥</div>
+                  </div>
+                </div>
+                <div style="text-align:center;padding:0 12px 8px;border-bottom:1px dashed var(--divider);font-size:12px;letter-spacing:2px;color:var(--accent2);font-weight:bold;">♡ STATUS ♡</div>
+                <!-- ===== CAROUSEL ===== -->
+                  <div style="position:relative;height:318px;overflow:hidden;">
+                    <div tabindex="0" style="display:flex;align-items:flex-start;height:338px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;outline:none;">
+                      <!-- PAGE 1 : RELATION -->
+                        <div style="flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;box-sizing:border-box;overflow-wrap:break-word;word-break:keep-all;height:318px;display:flex;flex-direction:column;justify-content:space-between;padding:11px 13px;overflow-y:auto;scrollbar-width:none;">
+                          <div style="font-size:11px;letter-spacing:1px;color:var(--accent2);font-weight:bold;">♡ RELATION</div>
+                          <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">관 계</div>
+                            <div style="font-size:12px;color:var(--main-text);">{{관}}</div>
+                          </div>
+                          <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">사귄 지</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{사}}</div>
+                            </div>
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">결혼기념일</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{결}}</div>
+                            </div>
+                          </div>
+                          <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">{{U}} 성별</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{U성}}</div>
+                            </div>
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">{{C}} 성별</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{C성}}</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:3px;">호 감 도</div>
+                            <div style="display:flex;align-items:center;gap:1px;font-size:13px;">
+                              <div style="color:var(--accent2);letter-spacing:1px;">{{호1}}</div>
+                              <div style="color:var(--dim);letter-spacing:1px;">{{호2}}</div>
+                              <div style="margin-left:6px;font-family:var(--font-main);font-size:11px;color:var(--accent2);">{{호3}}</div>
+                            </div>
+                          </div>
+                          <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">스킨쉽 진도</div>
+                            <div style="font-size:12px;color:var(--main-text);">{{진}}</div>
+                          </div>
+                          <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">오늘 섹스</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{오섹}} 회</div>
+                            </div>
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">누적 섹스</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{섹}} 회</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:2px;">현재 상황</div>
+                            <div style="font-size:11px;line-height:1.5;color:var(--main-text);">{{상}}</div>
+                          </div>
+                          <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">{{U}} 생일</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{U생}}</div>
+                            </div>
+                            <div style="flex:1;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">{{C}} 생일</div>
+                              <div style="font-size:12px;color:var(--main-text);">{{C생}}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- PAGE 2 : MIND -->
+                          <div style="flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;box-sizing:border-box;overflow-wrap:break-word;word-break:keep-all;height:318px;display:flex;flex-direction:column;padding:11px 13px;overflow-y:auto;scrollbar-width:none;">
+                            <div style="font-size:11px;letter-spacing:1px;color:var(--accent2);font-weight:bold;margin-bottom:8px;">♡ MIND</div>
+                            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:var(--box-bg);border:1px dashed var(--box-border);border-radius:12px;padding:9px 10px;">
+                              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                                <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--accent2);">♡ {{C}}</div>
+                                <div style="font-size:14px;color:var(--accent2);">{{C카}}</div>
+                              </div>
+                              <div style="font-size:11px;line-height:1.55;color:var(--main-text);">“{{C속}}”</div>
+                              <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+                                <div style="font-size:10px;color:var(--accent2);background:var(--chip-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 9px;">{{C감1}}</div>
+                                <div style="font-size:10px;color:var(--accent2);background:var(--chip-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 9px;">{{C감2}}</div>
+                                <div style="font-size:10px;color:var(--accent2);background:var(--chip-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 9px;">{{C감3}}</div>
+                              </div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:var(--box-bg);border:1px dashed var(--box-border);border-radius:12px;padding:9px 10px;margin-top:8px;">
+                              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                                <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--accent2);">♡ {{U}}</div>
+                                <div style="font-size:14px;color:var(--accent2);">{{U카}}</div>
+                              </div>
+                              <div style="font-size:11px;line-height:1.55;color:var(--main-text);">“{{U속}}”</div>
+                              <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+                                <div style="font-size:10px;color:var(--accent2);background:var(--chip-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 9px;">{{U감1}}</div>
+                                <div style="font-size:10px;color:var(--accent2);background:var(--chip-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 9px;">{{U감2}}</div>
+                                <div style="font-size:10px;color:var(--accent2);background:var(--chip-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 9px;">{{U감3}}</div>
+                              </div>
+                            </div>
+                            <div style="margin-top:8px;">
+                              <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:3px;">오늘 나눈 대화</div>
+                              <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:2px;">
+                                <div style="color:var(--accent2);min-width:36px;">{{U}} ♡</div>
+                                <div style="color:var(--main-text);">{{U대}}</div>
+                              </div>
+                              <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:2px;">
+                                <div style="color:var(--accent2);min-width:36px;">{{C}} ♡</div>
+                                <div style="color:var(--main-text);">{{C대}}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- PAGE 3 : STATE -->
+                            <div style="flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;box-sizing:border-box;overflow-wrap:break-word;word-break:keep-all;height:318px;display:flex;flex-direction:column;padding:11px 13px;overflow-y:auto;scrollbar-width:none;">
+                              <div style="font-size:11px;letter-spacing:1px;color:var(--accent2);font-weight:bold;margin-bottom:8px;">♡ STATE</div>
+                              <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:var(--box-bg);border:1px dashed var(--box-border);border-radius:12px;padding:9px 10px;">
+                                <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--accent2);margin-bottom:4px;">♡ {{U}}</div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">의상</div>
+                                  <div style="color:var(--main-text);">{{U의}}</div>
+                                </div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">상태</div>
+                                  <div style="color:var(--main-text);">{{U상}}</div>
+                                </div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">자세</div>
+                                  <div style="color:var(--main-text);">{{U자}}</div>
+                                </div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">소지품</div>
+                                  <div style="color:var(--main-text);">{{U소}}</div>
+                                </div>
+                              </div>
+                              <div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:var(--box-bg);border:1px dashed var(--box-border);border-radius:12px;padding:9px 10px;margin-top:8px;">
+                                <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--accent2);margin-bottom:4px;">♡ {{C}}</div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">의상</div>
+                                  <div style="color:var(--main-text);">{{C의}}</div>
+                                </div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">상태</div>
+                                  <div style="color:var(--main-text);">{{C상}}</div>
+                                </div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">자세</div>
+                                  <div style="color:var(--main-text);">{{C자}}</div>
+                                </div>
+                                <div style="display:flex;gap:6px;font-size:11px;line-height:1.5;margin-top:3px;">
+                                  <div style="color:var(--label-text);min-width:34px;">소지품</div>
+                                  <div style="color:var(--main-text);">{{C소}}</div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- PAGE 4 : DAILY -->
+                              <div style="flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;box-sizing:border-box;overflow-wrap:break-word;word-break:keep-all;height:318px;display:flex;flex-direction:column;justify-content:space-between;padding:11px 13px;overflow-y:auto;scrollbar-width:none;">
+                                <div style="font-size:11px;letter-spacing:1px;color:var(--accent2);font-weight:bold;">♡ DAILY</div>
+                                <div>
+                                  <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:2px;">상호 약속 (PROMISE)</div>
+                                  <div style="font-size:11px;line-height:1.5;color:var(--main-text);">{{약}}</div>
+                                </div>
+                                <div>
+                                  <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:3px;">{{C}} 가이딩 필요도</div>
+                                  <div style="display:flex;align-items:center;gap:1px;font-size:13px;">
+                                    <div style="color:var(--accent);letter-spacing:1px;">{{N필1}}</div>
+                                    <div style="color:var(--dim);letter-spacing:1px;">{{N필2}}</div>
+                                    <div style="margin-left:6px;font-family:var(--font-main);font-size:11px;color:var(--accent2);">{{가필}}%</div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:2px;">오늘의 일정</div>
+                                  <div style="font-size:11px;line-height:1.75;color:var(--main-text);">
+                                    <div style="display:inline;color:var(--accent);">♡</div>{{일1}}</div>
+                                    <div style="font-size:11px;line-height:1.75;color:var(--main-text);">
+                                      <div style="display:inline;color:var(--accent);">♡</div>{{일2}}</div>
+                                      <div style="font-size:11px;line-height:1.75;color:var(--main-text);">
+                                        <div style="display:inline;color:var(--accent);">♡</div>{{일3}}</div>
+                                      </div>
+                                      <div>
+                                        <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:4px;">식사 여부</div>
+                                        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                                          <div style="font-size:10px;background:var(--box-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 10px;color:var(--label-text);">아침 <div style="display:inline;color:var(--accent2);font-weight:bold;">{{식1}}</div>
+                                        </div>
+                                        <div style="font-size:10px;background:var(--box-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 10px;color:var(--label-text);">점심 <div style="display:inline;color:var(--accent2);font-weight:bold;">{{식2}}</div>
+                                      </div>
+                                      <div style="font-size:10px;background:var(--box-bg);border:1px solid var(--box-border);border-radius:20px;padding:3px 10px;color:var(--label-text);">저녁 <div style="display:inline;color:var(--dim);">{{식3}}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                  <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">샤워 여부</div>
+                                  <div style="font-size:12px;color:var(--accent2);font-weight:bold;">{{샤}}</div>
+                                </div>
+                              </div>
+                              <!-- PAGE 5 : DIARY -->
+                                <div style="flex:0 0 100%;min-width:0;max-width:100%;scroll-snap-align:start;box-sizing:border-box;overflow-wrap:break-word;word-break:keep-all;height:318px;display:flex;flex-direction:column;padding:11px 13px;overflow-y:auto;scrollbar-width:none;">
+                                  <div style="font-size:11px;letter-spacing:1px;color:var(--accent2);font-weight:bold;margin-bottom:8px;">♡ DIARY</div>
+                                  <div style="flex:1;">
+                                    <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);margin-bottom:3px;">오늘의 다이어리 · {{C}}</div>
+                                    <div style="font-size:11px;line-height:1.8;color:var(--main-text);white-space:pre-line;">{{일}}</div>
+                                  </div>
+                                  <div style="margin-top:9px;padding-top:8px;border-top:1px dashed var(--divider);">
+                                    <div style="font-family:var(--font-main);font-size:9px;letter-spacing:1px;color:var(--label-text);">♪ 오늘의 OST</div>
+                                    <div style="font-size:11px;color:var(--main-text);margin-top:2px;">{{노}}</div>
+                                    <div style="font-size:10px;color:var(--label-text);margin-top:2px;">from {{유}}</div>
+                                  </div>
+                                  <div style="margin-top:9px;padding:9px 10px;background:var(--box-bg);border:1px dashed var(--box-border);border-radius:12px;">
+                                    <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+                                      <div style="display:flex;flex-direction:column;align-items:center;">
+                                        <div style="width:8px;height:5px;border:2px solid var(--accent2);border-bottom:none;border-radius:5px 5px 0 0;margin-bottom:-1px;">
+                                        </div>
+                                        <div style="width:13px;height:9px;background:var(--accent2);border-radius:2px;">
+                                        </div>
+                                      </div>
+                                      <div style="font-size:10px;color:var(--accent2);font-weight:bold;">{{C}}의 비밀 메모장</div>
+                                    </div>
+                                    <div style="font-size:11px;line-height:1.65;color:var(--main-text);">{{메}}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div style="text-align:center;font-size:9px;color:var(--muted);padding:7px 0 10px;border-top:1px dashed var(--divider);letter-spacing:.5px;">◀ 스와이프 · 방향키로 넘김 ▶</div>
+                          </div>
+                        </div>
+                        <!-- power slider -->
+                          <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:12px;">
+                            <div style="color:var(--accent);font-size:12px;text-shadow:0 0 3px #fff;">♥</div>
+                            <div style="font-family:var(--font-main);font-size:7px;color:var(--muted);letter-spacing:1px;">OFF</div>
+                            <div style="width:42px;height:15px;border-radius:9px;background:#e5efeb;border:1px solid #c7d2cd;box-shadow:0 1px 2px rgba(120,120,120,.35) inset;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;">
+                              <div style="width:11px;height:11px;border-radius:50%;background:linear-gradient(180deg,#ffffff,#dbe6e1);border:1px solid #c7d2cd;box-shadow:0 1px 2px rgba(120,120,120,.4);">
+                              </div>
+                            </div>
+                            <div style="font-family:var(--font-main);font-size:7px;color:var(--accent2);letter-spacing:1px;font-weight:bold;">ON</div>
+                            <div style="color:var(--accent);font-size:12px;text-shadow:0 0 3px #fff;">★</div>
+                          </div>
+                          <!-- ===== CONTROLS ===== -->
+                            <div style="padding:10px 8px 0;position:relative;">
+                              <div style="position:absolute;top:2px;left:50%;transform:translateX(-50%) rotate(-8deg);color:var(--accent);font-size:13px;text-shadow:0 0 3px #fff;pointer-events:none;z-index:7;">♡</div>
+                              <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%) rotate(10deg);color:var(--accent);font-size:13px;text-shadow:0 0 3px #fff;pointer-events:none;z-index:7;">★</div>
+                              <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <!-- dpad -->
+                                  <div style="position:relative;width:94px;height:94px;filter:drop-shadow(0 4px 4px rgba(130,130,130,.4));">
+                                    <div style="position:absolute;left:33px;top:0;width:28px;height:35px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#f4f8f6,#dbe6e1);border:1px solid #c7d2cd;box-shadow:0 1px 0 rgba(255,255,255,.7) inset;display:flex;align-items:center;justify-content:center;color:#7d928b;font-size:11px;">▲</div>
+                                    <div style="position:absolute;left:33px;bottom:0;width:28px;height:35px;border-radius:3px 3px 8px 8px;background:linear-gradient(180deg,#f4f8f6,#dbe6e1);border:1px solid #c7d2cd;box-shadow:0 1px 0 rgba(255,255,255,.7) inset;display:flex;align-items:center;justify-content:center;color:#7d928b;font-size:11px;">▼</div>
+                                    <div style="position:absolute;left:0;top:33px;width:35px;height:28px;border-radius:8px 3px 3px 8px;background:linear-gradient(180deg,#f4f8f6,#dbe6e1);border:1px solid #c7d2cd;box-shadow:0 1px 0 rgba(255,255,255,.7) inset;display:flex;align-items:center;justify-content:center;color:#7d928b;font-size:11px;">◀</div>
+                                    <div style="position:absolute;right:0;top:33px;width:35px;height:28px;border-radius:3px 8px 8px 3px;background:linear-gradient(180deg,#f4f8f6,#dbe6e1);border:1px solid #c7d2cd;box-shadow:0 1px 0 rgba(255,255,255,.7) inset;display:flex;align-items:center;justify-content:center;color:#7d928b;font-size:11px;">▶</div>
+                                    <div style="position:absolute;left:33px;top:33px;width:28px;height:28px;border-radius:5px;background:radial-gradient(circle at 40% 35%,#d0d0d0,#a0a0a0);border:1px solid #888888;box-shadow:0 1px 2px rgba(100,100,100,.5) inset;display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:9px;">♡</div>
+                                  </div>
+                                  <!-- A / B -->
+                                    <div style="position:relative;width:96px;height:64px;">
+                                      <div style="position:absolute;right:0;top:2px;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#d9d9d9,#999999);border:1px solid #777777;box-shadow:0 4px 0 #888888,0 5px 8px rgba(120,120,120,.4),0 1px 0 rgba(255,255,255,.55) inset;display:flex;align-items:center;justify-content:center;color:#ffffff;font-family:var(--font-main);font-size:13px;font-weight:bold;">A</div>
+                                      <div style="position:absolute;left:6px;bottom:0;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#e6e6e6,#b3b3b3);border:1px solid #999999;box-shadow:0 4px 0 #aaaaaa,0 5px 8px rgba(120,120,120,.4),0 1px 0 rgba(255,255,255,.55) inset;display:flex;align-items:center;justify-content:center;color:#ffffff;font-family:var(--font-main);font-size:13px;font-weight:bold;">B</div>
+                                    </div>
+                                  </div>
+                                  <!-- pills + speaker -->
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px;padding:0 4px;">
+                                      <div style="display:flex;gap:10px;">
+                                        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                                          <div style="width:34px;height:11px;border-radius:8px;transform:rotate(-20deg);background:linear-gradient(180deg,#ffffff,#e5efeb);border:1px solid #c7d2cd;box-shadow:0 2px 0 #cdd8d3;">
+                                          </div>
+                                          <div style="font-family:var(--font-main);font-size:7px;color:var(--muted);letter-spacing:.5px;">SELECT</div>
+                                        </div>
+                                        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                                          <div style="width:34px;height:11px;border-radius:8px;transform:rotate(-20deg);background:linear-gradient(180deg,#ffffff,#e5efeb);border:1px solid #c7d2cd;box-shadow:0 2px 0 #cdd8d3;">
+                                          </div>
+                                          <div style="font-family:var(--font-main);font-size:7px;color:var(--muted);letter-spacing:.5px;">START</div>
+                                        </div>
+                                      </div>
+                                      <div style="display:flex;gap:4px;align-items:flex-end;padding-bottom:2px;">
+                                        <div style="width:5px;height:16px;border-radius:3px;background:#d3ddd8;transform:skewX(-18deg);box-shadow:0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(120,120,120,.3) inset;">
+                                        </div>
+                                        <div style="width:5px;height:21px;border-radius:3px;background:#d3ddd8;transform:skewX(-18deg);box-shadow:0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(120,120,120,.3) inset;">
+                                        </div>
+                                        <div style="width:5px;height:26px;border-radius:3px;background:#d3ddd8;transform:skewX(-18deg);box-shadow:0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(120,120,120,.3) inset;">
+                                        </div>
+                                        <div style="width:5px;height:21px;border-radius:3px;background:#d3ddd8;transform:skewX(-18deg);box-shadow:0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(120,120,120,.3) inset;">
+                                        </div>
+                                        <div style="width:5px;height:16px;border-radius:3px;background:#d3ddd8;transform:skewX(-18deg);box-shadow:0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(120,120,120,.3) inset;">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- color helpers ----------
+  function hexToRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255];}
+  function rgbToHex(r,g,b){const c=x=>('0'+Math.round(Math.max(0,Math.min(255,x))).toString(16)).slice(-2);return '#'+c(r)+c(g)+c(b);}
+  function mix(a,b,t){const A=hexToRgb(a),B=hexToRgb(b);return rgbToHex(A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t);}
+  function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2;if(mx===mn){h=s=0;}else{const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);switch(mx){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h/=6;}return[h*360,s*100,l*100];}
+  function hslToRgb(h,s,l){h/=360;s/=100;l/=100;let r,g,b;if(s===0){r=g=b=l;}else{const q=l<.5?l*(1+s):l+s-l*s;const p=2*l-q;const hue=(t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};r=hue(h+1/3);g=hue(h);b=hue(h-1/3);}return[r*255,g*255,b*255];}
+  function adjustL(hex,dl){const[r,g,b]=hexToRgb(hex);let[h,s,l]=rgbToHsl(r,g,b);l=Math.max(0,Math.min(100,l+dl));const[R,G,B]=hslToRgb(h,s,l);return rgbToHex(R,G,B);}
+  function rgba(hex,a){const[r,g,b]=hexToRgb(hex);return `rgba(${r},${g},${b},${a})`;}
+
+  // ---------- derive 14 vars from 3 main colors ----------
+  function derive(bg,accent,text){
+    return {
+      '--frame-bg': bg,
+      '--frame-border': mix(bg,text,0.16),
+      '--screen-bg': adjustL(bg,4),
+      '--screen-border': mix(bg,text,0.15),
+      '--box-bg': adjustL(bg,3),
+      '--chip-bg': mix(bg,text,0.06),
+      '--box-border': mix(bg,text,0.18),
+      '--divider': mix(bg,text,0.15),
+      '--main-text': text,
+      '--label-text': mix(text,bg,0.38),
+      '--muted': mix(text,bg,0.52),
+      '--dim': mix(bg,text,0.20),
+      '--accent': accent,
+      '--accent2': adjustL(accent,-12),
+    };
+  }
+  const COLORS=[
+    {key:'--frame-bg',label:'프레임 배경'},{key:'--frame-border',label:'프레임 테두리'},
+    {key:'--screen-bg',label:'화면 배경'},{key:'--screen-border',label:'화면 테두리'},
+    {key:'--box-bg',label:'본문 박스'},{key:'--chip-bg',label:'감정 칩'},
+    {key:'--box-border',label:'박스 테두리'},{key:'--divider',label:'구분선'},
+    {key:'--main-text',label:'메인 텍스트'},{key:'--label-text',label:'라벨'},
+    {key:'--muted',label:'흐린 텍스트'},{key:'--dim',label:'게이지 빈칸'},
+    {key:'--accent',label:'포인트 1'},{key:'--accent2',label:'포인트 2'},
+  ];
+
+  // ---------- 3-color presets ----------
+  const PRESETS={
+    '그레이(기본)':{bg:'#f2f2f2',ac:'#777777',tx:'#3a3a3a'},
+    '민트':      {bg:'#eef6f3',ac:'#23b394',tx:'#4f5d58'},
+    '벚꽃':      {bg:'#fdeef4',ac:'#e5679a',tx:'#6a5560'},
+    '라벤더':    {bg:'#f2eefb',ac:'#8a5cd6',tx:'#5d5470'},
+    '소다':      {bg:'#eaf3fb',ac:'#2f8fd6',tx:'#4f5b68'},
+    '버터':      {bg:'#fdf7e6',ac:'#e0a92a',tx:'#6a6146'},
+    '코랄':      {bg:'#fdf0ec',ac:'#e86a4c',tx:'#6a564f'},
+    '모카':      {bg:'#f3ece3',ac:'#a5763f',tx:'#5f5346'},
+    '나이트':    {bg:'#232a33',ac:'#4fd6b4',tx:'#cdd8e2'},
+  };
+
+  // ---------- patterns ----------
+  const PATTERNS=['없음','그리드','세로줄','대각선','깅엄체크','땡땡이','별','하트'];
+  const STAR="M12 2l2.9 6.2 6.8.6-5.1 4.5 1.5 6.7L12 16.9 5.9 20.5l1.5-6.7L2.3 9.4l6.8-.6z";
+  const HEART="M12 21s-7.4-4.8-9.6-9C1.2 9.2 2.5 6.2 5.3 5.6 7.3 5.2 9 6.3 12 9.1c3-2.8 4.7-3.9 6.7-3.5 2.8.6 4.1 3.6 2.9 6.4C19.4 16.2 12 21 12 21z";
+  function svgTile(path,hex,a,s){const svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+s+"' height='"+s+"' viewBox='0 0 24 24'><path d='"+path+"' fill='"+hex+"' fill-opacity='"+a+"'/></svg>";return "url(\"data:image/svg+xml,"+encodeURIComponent(svg)+"\")";}
+  function buildPattern(shape,hex,a,s){
+    const c=rgba(hex,a),half=Math.max(2,Math.round(s/2));
+    switch(shape){
+      case '없음':return {img:'none',size:'auto',pos:'0 0'};
+      case '그리드':return {img:`repeating-linear-gradient(0deg,${c} 0 1.5px,transparent 1.5px ${s}px),repeating-linear-gradient(90deg,${c} 0 1.5px,transparent 1.5px ${s}px)`,size:'auto',pos:'0 0'};
+      case '세로줄':return {img:`repeating-linear-gradient(90deg,${c} 0 ${half}px,transparent ${half}px ${s}px)`,size:'auto',pos:'0 0'};
+      case '대각선':return {img:`repeating-linear-gradient(45deg,${c} 0 ${half}px,transparent ${half}px ${s}px)`,size:'auto',pos:'0 0'};
+      case '깅엄체크':return {img:`repeating-linear-gradient(0deg,${c} 0 ${half}px,transparent ${half}px ${s}px),repeating-linear-gradient(90deg,${c} 0 ${half}px,transparent ${half}px ${s}px)`,size:'auto',pos:'0 0'};
+      case '땡땡이':return {img:`radial-gradient(${c} 23%,transparent 25%),radial-gradient(${c} 23%,transparent 25%)`,size:`${s}px ${s}px`,pos:`0 0,${half}px ${half}px`};
+      case '별':return {img:svgTile(STAR,hex,a,s),size:`${s}px ${s}px`,pos:'center'};
+      case '하트':return {img:svgTile(HEART,hex,a,s),size:`${s}px ${s}px`,pos:'center'};
+      default:return {img:'none',size:'auto',pos:'0 0'};
+    }
+  }
+
+  // ---------- fonts ----------
+  const FONTS=[
+    ['프리텐다드(기본)',"'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif"],
+    ['지마켓산스 미디움',"'GmarketSansMedium','Apple SD Gothic Neo',sans-serif"],
+    ['갈무리11(픽셀)',"'Galmuri11','Apple SD Gothic Neo',monospace"],
+    ['애플 산돌고딕',"'Apple SD Gothic Neo','Malgun Gothic',sans-serif"],
+    ['맑은 고딕',"'Malgun Gothic','Apple SD Gothic Neo',sans-serif"],
+    ['고운돋움(깔끔)',"'Gowun Dodum','Apple SD Gothic Neo',sans-serif"],
+    ['나눔명조(세리프)',"'Nanum Myeongjo',serif"],
+    ['주아(둥근·굵게)',"'Jua',sans-serif"],
+    ['개구(손글씨)',"'Gaegu',cursive"],
+    ['나눔펜(손글씨)',"'Nanum Pen Script',cursive"],
+    ['모노스페이스',"ui-monospace,'Courier New',monospace"],
+  ];
+
+  // ---------- state ----------
+  const state={
+    bg:'#f2f2f2',ac:'#777777',tx:'#3a3a3a',
+    vars:{},
+    framePat:{shape:'그리드',color:'#c9c9c9',alpha:16,size:14},
+    screenPat:{shape:'그리드',color:'#cccccc',alpha:9,size:18},
+    font:FONTS[0][1],
+  };
+
+  // ---------- mount ----------
+  const mount=document.getElementById('mount');
+  mount.innerHTML=document.getElementById('tpl').innerHTML.trim();
+  const root=mount.firstElementChild;
+
+  // recompute all 14 vars + auto pattern colors from the 3 mains
+  function recompute(){
+    state.vars=derive(state.bg,state.ac,state.tx);
+    state.framePat.color=state.vars['--frame-border'];
+    state.screenPat.color=state.vars['--screen-border'];
+    syncMains(); syncAdvanced(); syncPatternInputs();
+    render();
+  }
+
+  function render(){
+    COLORS.forEach(c=>root.style.setProperty(c.key,state.vars[c.key]));
+    root.style.setProperty('--font-main',state.font);
+    const fp=buildPattern(state.framePat.shape,state.framePat.color,state.framePat.alpha/100,state.framePat.size);
+    root.style.setProperty('--pattern',fp.img);
+    root.style.setProperty('--pattern-size',fp.size);
+    root.style.setProperty('--pattern-pos',fp.pos);
+    const sp=buildPattern(state.screenPat.shape,state.screenPat.color,state.screenPat.alpha/100,state.screenPat.size);
+    root.style.setProperty('--screen-pattern',sp.img);
+    root.style.setProperty('--screen-pattern-size',sp.size);
+    root.style.setProperty('--screen-pattern-pos',sp.pos);
+    updateCode();
+  }
+  function updateCode(){
+    document.getElementById('codeOut').value="<!-- 위젯 테마: 텍스트/구조 원본 유지, 색상·무늬·폰트만 커스텀됨 -->\n"+root.outerHTML;
+  }
+
+  // ---------- builders ----------
+  function selChip(box,btn){box.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));btn.classList.add('active');}
+  function buildPresets(){
+    const box=document.getElementById('presetChips');
+    Object.keys(PRESETS).forEach((name,i)=>{
+      const p=PRESETS[name];
+      const b=document.createElement('button');b.className='chip'+(i===0?' active':'');b.type='button';
+      const sw=document.createElement('span');sw.className='sw';sw.style.background=p.ac;
+      b.appendChild(sw);b.appendChild(document.createTextNode(name));
+      b.addEventListener('click',()=>{selChip(box,b);state.bg=p.bg;state.ac=p.ac;state.tx=p.tx;recompute();});
+      box.appendChild(b);
+    });
+  }
+  function buildPatternChips(hostId,which){
+    const box=document.getElementById(hostId);
+    PATTERNS.forEach(sh=>{
+      const b=document.createElement('button');b.className='chip'+(sh===state[which].shape?' active':'');b.type='button';b.textContent=sh;
+      b.addEventListener('click',()=>{selChip(box,b);state[which].shape=sh;render();});
+      box.appendChild(b);
+    });
+  }
+  function buildAdvanced(){
+    const host=document.getElementById('rowsAdvanced');
+    COLORS.forEach(c=>{
+      const row=document.createElement('div');row.className='row';
+      const left=document.createElement('div');left.innerHTML='<span class="lbl">'+c.label+'</span>';
+      const wrap=document.createElement('div');wrap.className='swatch-wrap';
+      const hex=document.createElement('span');hex.className='hexval';
+      const inp=document.createElement('input');inp.type='color';inp.className='mini';
+      inp.addEventListener('input',()=>{state.vars[c.key]=inp.value;hex.textContent=inp.value;render();});
+      wrap.appendChild(hex);wrap.appendChild(inp);row.appendChild(left);row.appendChild(wrap);host.appendChild(row);
+      c._inp=inp;c._hex=hex;
+    });
+  }
+  function buildFonts(){
+    const sel=document.getElementById('fontSel');
+    FONTS.forEach(([name,stack])=>{const o=document.createElement('option');o.value=stack;o.textContent=name;o.style.fontFamily=stack;sel.appendChild(o);});
+    sel.addEventListener('change',()=>{state.font=sel.value;render();});
+  }
+
+  // ---------- sync ----------
+  function syncMains(){
+    mBg.value=state.bg;mBgV.textContent=state.bg;
+    mAc.value=state.ac;mAcV.textContent=state.ac;
+    mTx.value=state.tx;mTxV.textContent=state.tx;
+  }
+  function syncAdvanced(){COLORS.forEach(c=>{if(c._inp){c._inp.value=state.vars[c.key];c._hex.textContent=state.vars[c.key];}});}
+  function syncPatternInputs(){
+    fPatColor.value=state.framePat.color;fPatHex.textContent=state.framePat.color;
+    fPatAlpha.value=state.framePat.alpha;fPatAlphaN.textContent=(state.framePat.alpha/100).toFixed(2);
+    fPatSize.value=state.framePat.size;fPatSizeN.textContent=state.framePat.size+'px';
+    sPatColor.value=state.screenPat.color;sPatHex.textContent=state.screenPat.color;
+    sPatAlpha.value=state.screenPat.alpha;sPatAlphaN.textContent=(state.screenPat.alpha/100).toFixed(2);
+    sPatSize.value=state.screenPat.size;sPatSizeN.textContent=state.screenPat.size+'px';
+  }
+
+  // ---------- element refs ----------
+  const mBg=document.getElementById('mBg'),mAc=document.getElementById('mAc'),mTx=document.getElementById('mTx');
+  const mBgV=document.getElementById('mBgV'),mAcV=document.getElementById('mAcV'),mTxV=document.getElementById('mTxV');
+  const fPatColor=document.getElementById('fPatColor'),fPatHex=document.getElementById('fPatHex'),fPatAlpha=document.getElementById('fPatAlpha'),fPatAlphaN=document.getElementById('fPatAlphaN'),fPatSize=document.getElementById('fPatSize'),fPatSizeN=document.getElementById('fPatSizeN');
+  const sPatColor=document.getElementById('sPatColor'),sPatHex=document.getElementById('sPatHex'),sPatAlpha=document.getElementById('sPatAlpha'),sPatAlphaN=document.getElementById('sPatAlphaN'),sPatSize=document.getElementById('sPatSize'),sPatSizeN=document.getElementById('sPatSizeN');
+
+  // main color inputs -> recompute everything
+  mBg.addEventListener('input',()=>{state.bg=mBg.value;recompute();});
+  mAc.addEventListener('input',()=>{state.ac=mAc.value;recompute();});
+  mTx.addEventListener('input',()=>{state.tx=mTx.value;recompute();});
+
+  // pattern inputs
+  fPatColor.addEventListener('input',e=>{state.framePat.color=e.target.value;fPatHex.textContent=e.target.value;render();});
+  fPatAlpha.addEventListener('input',e=>{state.framePat.alpha=+e.target.value;fPatAlphaN.textContent=(+e.target.value/100).toFixed(2);render();});
+  fPatSize.addEventListener('input',e=>{state.framePat.size=+e.target.value;fPatSizeN.textContent=e.target.value+'px';render();});
+  sPatColor.addEventListener('input',e=>{state.screenPat.color=e.target.value;sPatHex.textContent=e.target.value;render();});
+  sPatAlpha.addEventListener('input',e=>{state.screenPat.alpha=+e.target.value;sPatAlphaN.textContent=(+e.target.value/100).toFixed(2);render();});
+  sPatSize.addEventListener('input',e=>{state.screenPat.size=+e.target.value;sPatSizeN.textContent=e.target.value+'px';render();});
+
+  // collapsibles
+  document.querySelectorAll('.sec .sec-hd').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('closed')));
+
+  // copy / reset
+  const toast=document.getElementById('toast');
+  function showToast(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1500);}
+  document.getElementById('copyBtn').addEventListener('click',()=>{
+    const ta=document.getElementById('codeOut'),txt=ta.value;
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>showToast('HTML을 복사했어요 ✓')).catch(()=>{ta.select();document.execCommand('copy');showToast('HTML을 복사했어요 ✓');});}
+    else{ta.select();document.execCommand('copy');showToast('HTML을 복사했어요 ✓');}
+  });
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    document.getElementById('presetChips').querySelectorAll('.chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+    const p=PRESETS['그레이(기본)'];state.bg=p.bg;state.ac=p.ac;state.tx=p.tx;
+    state.framePat={shape:'그리드',color:'#c9c9c9',alpha:16,size:14};
+    state.screenPat={shape:'그리드',color:'#cccccc',alpha:9,size:18};
+    document.getElementById('framePatChips').querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.textContent==='그리드'));
+    document.getElementById('screenPatChips').querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.textContent==='그리드'));
+    document.getElementById('fontSel').selectedIndex=0;state.font=FONTS[0][1];
+    recompute();showToast('기본값으로 되돌렸어요');
+  });
+
+  // ---------- init ----------
+  buildPresets();
+  buildPatternChips('framePatChips','framePat');
+  buildPatternChips('screenPatChips','screenPat');
+  buildAdvanced();
+  buildFonts();
+  recompute();
+})();
+</script>
+</body>
+</html>
